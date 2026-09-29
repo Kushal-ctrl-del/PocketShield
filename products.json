@@ -1,0 +1,27 @@
+{
+  "disclaimer": "Fictional demo products for a bootcamp. Not real insurance.",
+  "eligible_age": [18, 55],
+  "products": [
+    {
+      "id": "A",
+      "name": "Weekly Accident Cover",
+      "pays": "A one-time lump sum equal to your cover amount if you die or become permanently disabled in an accident, and up to 20% of it if an accident puts you in hospital for 24+ hours.",
+      "tiers_inr": [25000, 50000, 100000],
+      "formula": "(cover/1000) x 0.08 x occupation_factor x hours_factor x night_factor, rounded UP to whole rupees",
+      "occupation_factor": {"delivery_rider": 1.8, "campus_worker": 1.0, "domestic_worker": 1.0, "construction_worker": 2.0, "freelancer": 1.0},
+      "hours_factor": {"under_20": 0.8, "20_to_40": 1.0, "over_40": 1.3},
+      "night_factor": {"night_work": 1.2, "no_night": 1.0},
+      "not_covered": "Won't pay for repairs or theft of your bike, illness, or accidents while riding without a valid licence or under alcohol."
+    },
+    {
+      "id": "B",
+      "name": "Daily Hospital Cash",
+      "pays": "A fixed cash amount for each day you are admitted to hospital, up to 7 days per event, from an accident or illness.",
+      "tiers_inr_per_day": [300, 500],
+      "formula": "(daily/100) x 0.9 x occupation_factor_b x age_factor, rounded UP to whole rupees",
+      "occupation_factor_b": {"delivery_rider": 1.5, "campus_worker": 1.0, "domestic_worker": 1.2, "construction_worker": 1.5, "freelancer": 1.0},
+      "age_factor": {"18_to_29": 1.0, "30_to_44": 1.3, "45_to_55": 1.7},
+      "not_covered": "Won't pay for doctor visits without hospital admission, illness in the first 48 hours, or conditions you already had in the first 90 days."
+    }
+  ]
+}

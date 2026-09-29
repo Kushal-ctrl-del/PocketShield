@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chhota Cover — PocketShield</title>
+<style>
+  :root {
+    --bg: #FDFBF7;
+    --text: #1C1C1C;
+    --accent: #F59E0B;
+    --accent-dark: #D97706;
+    --agent-bubble: #FFFFFF;
+    --user-bubble: #FDE68A;
+    --gap-bg: repeating-linear-gradient(45deg, #FEE2E2, #FEE2E2 10px, #FECACA 10px, #FECACA 20px);
+    --border: #E5E7EB;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #F0EDE8;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  #app {
+    max-width: 480px;
+    margin: 0 auto;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    box-shadow: 0 0 24px rgba(0,0,0,0.12);
+  }
+  header {
+    padding: 12px 16px 10px;
+    border-bottom: 1px solid var(--border);
+    background: white;
+  }
+  .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  h1 { margin: 0; font-size: 1.15rem; font-weight: 700; letter-spacing: -0.3px; }
+  .brand-sub { font-size: 0.7rem; color: #71717A; margin-top: 1px; }
+  .lang-toggle {
+    background: #F4F4F5;
+    border-radius: 20px;
+    padding: 3px;
+    display: flex;
+    gap: 2px;
+  }
+  .lang-btn {
+    border: none;
+    background: transparent;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: #52525B;
+    transition: all 0.15s;
+  }
+  .lang-btn.active {
+    background: var(--accent);
+    color: white;
+    font-weight: 600;
+  }
+  .personas {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .persona-chip {
+    background: white;
+    border: 1.5px solid var(--accent);
+    color: var(--accent-dark);
+    padding: 5px 12px;
+    border-radius: 16px;
+    font-size: 0.82rem;
+    white-space: nowrap;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .persona-chip:hover { background: var(--accent); color: white; }
+  #chat {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .msg-row { display: flex; width: 100%; }
+  .msg-row.user { justify-content: flex-end; }
+  .bubble {
+    max-width: 82%;
+    padding: 10px 14px;
+    border-radius: 18px;
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+  .agent .bubble {
+    background: var(--agent-bubble);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .user .bubble {
+    background: var(--user-bubble);
+    border-bottom-right-radius: 4px;
+  }
+
+  /* Ticket stub */
+  .ticket {
+    background: white;
+    border: 1.5px dashed #D1D5DB;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-top: 8px;
+    position: relative;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    letter-spacing: 0.2px;
+  }
+  .badge.recommended { background: #FEF3C7; color: #92400E; }
+  .badge.addon { background: #EDE9FE; color: #5B21B6; }
+  .ticket-price {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--accent-dark);
+    line-height: 1.1;
+  }
+  .ticket-sub {
+    font-size: 0.73rem;
+    color: #6B7280;
+    margin: 2px 0 10px;
+    font-weight: 500;
+  }
+  .ticket-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+  }
+  .ticket-pays {
+    font-size: 0.82rem;
+    color: #374151;
+    line-height: 1.4;
+  }
+  .gap-strip {
+    background: var(--gap-bg);
+    border: 1px solid #FCA5A5;
+    border-radius: 0 0 8px 8px;
+    border-top: none;
+    padding: 8px 12px;
+    font-size: 0.82rem;
+    color: #7F1D1D;
+    line-height: 1.4;
+  }
+  .total-row {
+    text-align: center;
+    font-weight: 700;
+    margin-top: 10px;
+    font-size: 1rem;
+    background: #FEF9EE;
+    border: 1px solid #FDE68A;
+    border-radius: 8px;
+    padding: 8px;
+  }
+  .buttons-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .action-btn {
+    background: white;
+    border: 1.5px solid var(--border);
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    color: #374151;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .action-btn:hover { border-color: var(--accent); color: var(--accent-dark); }
+  .primary-btn {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .primary-btn:hover { background: var(--accent-dark); border-color: var(--accent-dark); color: white; }
+
+  /* Draft card */
+  .draft-card {
+    background: #FFFBEB;
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    padding: 16px;
+    margin-top: 8px;
+    position: relative;
+  }
+  .draft-stamp {
+    position: absolute;
+    top: 12px; right: 10px;
+    color: #DC2626;
+    border: 2px solid #DC2626;
+    padding: 2px 7px;
+    font-weight: 700;
+    font-size: 0.65rem;
+    letter-spacing: 0.5px;
+    transform: rotate(12deg);
+    opacity: 0.75;
+    border-radius: 2px;
+  }
+  .draft-section {
+    background: white;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 0.83rem;
+  }
+  .draft-field {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    border-bottom: 1px solid #F3F4F6;
+  }
+  .draft-field:last-child { border-bottom: none; }
+  .draft-key { color: #6B7280; }
+  .draft-val { font-weight: 600; }
+  .draft-total {
+    text-align: center;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-top: 10px;
+    color: var(--accent-dark);
+  }
+
+  /* Input */
+  .input-area {
+    padding: 10px 12px;
+    background: white;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  input[type="text"] {
+    flex: 1;
+    padding: 11px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 24px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border 0.15s;
+    background: #FAFAFA;
+  }
+  input[type="text"]:focus { border-color: var(--accent); background: white; }
+  button[type="submit"] {
+    background: var(--accent);
+    color: white;
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+  button[type="submit"]:hover { background: var(--accent-dark); }
+  footer {
+    padding: 6px 16px 8px;
+    text-align: center;
+    font-size: 0.7rem;
+    color: #71717A;
+    background: white;
+    border-top: 1px solid var(--border);
+  }
+  .meter {
+    font-family: 'Courier New', monospace;
+    font-size: 0.68rem;
+    color: #10B981;
+    margin-bottom: 2px;
+    font-weight: 600;
+  }
+  .typing { display: flex; gap: 4px; align-items: center; height: 22px; }
+  .typing .dot {
+    width: 7px; height: 7px;
+    background: #D1D5DB;
+    border-radius: 50%;
+    animation: bounce 1.3s infinite ease-in-out both;
+  }
+  .typing .dot:nth-child(1) { animation-delay: -0.32s; }
+  .typing .dot:nth-child(2) { animation-delay: -0.16s; }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="top-row">
+      <div>
+        <h1>🛡️ Chhota Cover</h1>
+        <div class="brand-sub">PocketShield · Weekly cover for gig workers</div>
+      </div>
+      <div class="lang-toggle">
+        <button class="lang-btn active" id="btn-en" onclick="setLang('en', this)">EN</button>
+        <button class="lang-btn" id="btn-hinglish" onclick="setLang('hinglish', this)">Hinglish</button>
+      </div>
+    </div>
+    <div class="personas" id="personas-container"></div>
+  </header>
+
+  <div id="chat"></div>
+
+  <div class="input-area">
+    <input type="text" id="msg-input" placeholder="Type a message..." onkeypress="handleEnter(event)" autocomplete="off">
+    <button type="submit" onclick="sendMessage()">➤</button>
+  </div>
+
+  <footer>
+    <div class="meter" id="meter">qwen/qwen3.8-27b · 0 tokens · 0 LLM calls</div>
+    <div>Demo with fictional products. Not real insurance.</div>
+  </footer>
+</div>
+
+<script>
+  let sessionId = Math.random().toString(36).substring(7);
+  let lang = 'en';
+  let personas = [];
+
+  function setLang(l, btn) {
+    lang = l;
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  async function loadPersonas() {
+    try {
+      const res = await fetch('/personas');
+      personas = await res.json();
+      const c = document.getElementById('personas-container');
+      c.innerHTML = personas.map((p, i) =>
+        `<button class="persona-chip" data-idx="${i}">Try as ${p.name}</button>`
+      ).join('');
+      c.querySelectorAll('.persona-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const p = personas[parseInt(btn.dataset.idx)];
+          sendOpening(p);
+        });
+      });
+    } catch(e) { console.error('Failed to load personas', e); }
+  }
+
+  function getQuestionPrompt(key) {
+    if (lang === 'hinglish') {
+      const map = {
+        occupation: 'Kaam kya hai? (delivery rider, campus worker, domestic worker, construction, freelancer)',
+        hours: 'Aapko hafte mein roughly kitne ghante kaam karte ho?',
+        night: 'Kya aap aksar raat ko kaam karte ho (10pm ke baad)?',
+        age: 'Aapki umar kitni hai?'
+      };
+      return map[key] || 'Aapka sawal kya hai?';
+    }
+
+    const map = {
+      occupation: 'What work do you do? (e.g. delivery rider, campus worker, domestic worker, construction, freelancer)',
+      hours: 'How many hours a week do you work roughly?',
+      night: 'Do you often work night shifts (after 10pm)?',
+      age: 'What is your age?'
+    };
+    return map[key] || 'What would you like to tell me?';
+  }
+
+  function sendOpening(persona) {
+    sessionId = Math.random().toString(36).substring(7);
+    document.getElementById('chat').innerHTML = '';
+    updateMeter({model: 'qwen/qwen3.8-27b', tokens_total: 0, llm_calls: 0});
+    document.getElementById('msg-input').value = '';
+    const hiLine = persona && persona.name
+      ? `Hi ${persona.name}! 👋 I am Chhota Cover. ${getQuestionPrompt('occupation')}`
+      : `Hi! 👋 I am Chhota Cover. ${getQuestionPrompt('occupation')}`;
+    appendMessage('agent', hiLine + '<br><small style="color:#6B7280">e.g. delivery rider · campus worker · domestic worker · freelancer</small>');
+  }
+
+  function appendMessage(sender, text) {
+    const chat = document.getElementById('chat');
+    const row = document.createElement('div');
+    row.className = `msg-row ${sender}`;
+    row.innerHTML = `<div class="bubble">${text}</div>`;
+    chat.appendChild(row);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function showTyping() {
+    const chat = document.getElementById('chat');
+    const row = document.createElement('div');
+    row.className = 'msg-row agent typing-row';
+    row.innerHTML = `<div class="bubble typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+    chat.appendChild(row);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function removeTyping() {
+    const t = document.querySelector('.typing-row');
+    if (t) t.remove();
+  }
+
+  function appendCard(card) {
+    const chat = document.getElementById('chat');
+    const row = document.createElement('div');
+    row.className = 'msg-row agent';
+    let html = '<div class="bubble" style="background:transparent;border:none;padding:0;max-width:96%">';
+
+    if (card.type === 'price') {
+      card.products.forEach((p, i) => {
+        const badge = i === 0
+          ? '<span class="badge recommended">⭐ Recommended</span>'
+          : '<span class="badge addon">＋ Add-on</span>';
+        html += `
+          <div class="ticket">
+            ${badge}
+            <div class="ticket-price">₹${p.week} / week</div>
+            <div class="ticket-sub">₹${p.day} a day &nbsp;·&nbsp; ₹${p.year} a year</div>
+            <div class="ticket-name">${p.name}</div>
+            <div class="ticket-pays">${p.pays}</div>
+          </div>
+          <div class="gap-strip"><strong>❌ NOT COVERED:</strong> ${p.not_covered}</div>
+        `;
+      });
+      if (card.products.length > 1) {
+        html += `<div class="total-row">Combined total &nbsp;₹${card.weekly_total} / week</div>`;
+      }
+      html += `
+        <div class="buttons-row">
+          <button class="action-btn primary-btn" onclick="sendAction('Draft my signup')">✍️ Draft my signup</button>
+          <button class="action-btn" onclick="sendAction('Start over')">🔄 Start over</button>
+        </div>`;
+
+    } else if (card.type === 'draft') {
+      const profileHtml = Object.entries(card.profile).map(([k, v]) => {
+        const label = k.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        const val = typeof v === 'boolean' ? (v ? 'Yes ✓' : 'No ✗') : v;
+        return `<div class="draft-field"><span class="draft-key">${label}</span><span class="draft-val">${val}</span></div>`;
+      }).join('');
+
+      const productsHtml = (card.recommendation?.products || []).map((p, i) =>
+        `<div class="draft-field">
+          <span class="draft-key">${i === 0 ? '⭐ Primary' : '＋ Add-on'}: ${p.name}</span>
+          <span class="draft-val">₹${p.week}/wk</span>
+        </div>`
+      ).join('');
+
+      html += `
+        <div class="draft-card">
+          <div class="draft-stamp">DRAFT — NOTHING BOUGHT</div>
+          <h4 style="margin:0 0 12px;font-size:1rem">📋 Application Draft</h4>
+          <p style="margin:0 0 4px;font-size:0.75rem;font-weight:700;color:#6B7280;letter-spacing:0.5px">YOUR PROFILE</p>
+          <div class="draft-section">${profileHtml}</div>
+          <p style="margin:10px 0 4px;font-size:0.75rem;font-weight:700;color:#6B7280;letter-spacing:0.5px">COVER SELECTED</p>
+          <div class="draft-section">${productsHtml}</div>
+          <div class="draft-total">Total ₹${card.recommendation?.weekly_total || 0} / week</div>
+          <div class="buttons-row" style="margin-top:12px">
+            <button class="action-btn" onclick="sendAction('Start over')">🔄 Start over</button>
+          </div>
+        </div>`;
+    }
+
+    html += '</div>';
+    row.innerHTML = html;
+    chat.appendChild(row);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function sendAction(msg) {
+    if (msg === 'Start over') {
+      sessionId = Math.random().toString(36).substring(7);
+      document.getElementById('chat').innerHTML = '';
+      updateMeter({model: 'qwen/qwen3.8-27b', tokens_total: 0, llm_calls: 0});
+      appendMessage('agent', `Hi! 👋 I am Chhota Cover. ${getQuestionPrompt('occupation')}<br><small style="color:#6B7280">e.g. delivery rider · campus worker · domestic worker · freelancer</small>`);
+      return;
+    }
+    document.getElementById('msg-input').value = msg;
+    sendMessage();
+  }
+
+  function updateMeter(m) {
+    if (m) document.getElementById('meter').innerText =
+      `${m.model} · ${m.tokens_total} tokens · ${m.llm_calls} LLM calls`;
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById('msg-input');
+    const msg = input.value.trim();
+    if (!msg) return;
+    appendMessage('user', msg);
+    input.value = '';
+    showTyping();
+    try {
+      const res = await fetch('/chat', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({session_id: sessionId, message: msg, lang: lang})
+      });
+      const data = await res.json();
+      removeTyping();
+      if (data.reply) appendMessage('agent', data.reply);
+      if (data.card) appendCard(data.card);
+      updateMeter(data.meter);
+    } catch(e) {
+      removeTyping();
+      appendMessage('agent', 'Error connecting to server. Please refresh.');
+    }
+  }
+
+  function handleEnter(e) {
+    if (e.key === 'Enter') sendMessage();
+  }
+
+  // Init
+  loadPersonas();
+  appendMessage('agent', 'Hi! 👋 I am Chhota Cover. What work do you do?<br><small style="color:#6B7280">e.g. delivery rider · campus worker · domestic worker · freelancer</small>');
+</script>
+</body>
+</html>

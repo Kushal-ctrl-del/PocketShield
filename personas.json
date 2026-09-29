@@ -1,0 +1,6 @@
+[
+  {"name": "Arjun", "age": 24, "occupation": "delivery_rider", "hours_per_week": 45, "night_work": false,
+   "opening_message": "hi i ride for a food delivery app in chennai, around 45 hours a week, mostly daytime, im 24"},
+  {"name": "Meena", "age": 19, "occupation": "campus_worker", "hours_per_week": 18, "night_work": false,
+   "opening_message": "I work part time in the college canteen, about 18 hrs a week. I'm 19"}
+]
