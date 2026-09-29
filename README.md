@@ -1,4 +1,4 @@
-# Chhota Cover
+# PocketShield
 
 A WhatsApp-style chat agent that helps a gig rider or campus worker buy tiny weekly insurance cover without a bank-portal style signup.
 

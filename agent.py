@@ -98,7 +98,7 @@ def phrase_intro(lang: str, products_text: str) -> tuple[str, int, int]:
         lang_instruction = "simple English"
 
     system_prompt = (
-        f"You are Chhota Cover, a friendly WhatsApp-style helper for gig workers in India. "
+        f"You are PocketShield, a friendly WhatsApp-style helper for gig workers in India. "
         f"Write max 2 short lines introducing the cover card below. "
         f"Plain words, no jargon, no promises about claims. "
         f"Do not mention any number or product name not in the text given. "

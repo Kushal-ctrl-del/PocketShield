@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chhota Cover — PocketShield</title>
+<title>PocketShield</title>
 <style>
   :root {
     --bg: #FDFBF7;
@@ -317,7 +317,7 @@
   <header>
     <div class="top-row">
       <div>
-        <h1>🛡️ Chhota Cover</h1>
+        <h1>🛡️ PocketShield</h1>
         <div class="brand-sub">PocketShield · Weekly cover for gig workers</div>
       </div>
       <div class="lang-toggle">
@@ -395,8 +395,8 @@
     updateMeter({model: 'qwen/qwen3.8-27b', tokens_total: 0, llm_calls: 0});
     document.getElementById('msg-input').value = '';
     const hiLine = persona && persona.name
-      ? `Hi ${persona.name}! 👋 I am Chhota Cover. ${getQuestionPrompt('occupation')}`
-      : `Hi! 👋 I am Chhota Cover. ${getQuestionPrompt('occupation')}`;
+      ? `Hi ${persona.name}! 👋 I am PocketShield. ${getQuestionPrompt('occupation')}`
+      : `Hi! 👋 I am PocketShield. ${getQuestionPrompt('occupation')}`;
     appendMessage('agent', hiLine + '<br><small style="color:#6B7280">e.g. delivery rider · campus worker · domestic worker · freelancer</small>');
   }
 
@@ -494,7 +494,7 @@
       sessionId = Math.random().toString(36).substring(7);
       document.getElementById('chat').innerHTML = '';
       updateMeter({model: 'qwen/qwen3.8-27b', tokens_total: 0, llm_calls: 0});
-      appendMessage('agent', `Hi! 👋 I am Chhota Cover. ${getQuestionPrompt('occupation')}<br><small style="color:#6B7280">e.g. delivery rider · campus worker · domestic worker · freelancer</small>`);
+      appendMessage('agent', `Hi! 👋 I am PocketShield. ${getQuestionPrompt('occupation')}<br><small style="color:#6B7280">e.g. delivery rider · campus worker · domestic worker · freelancer</small>`);
       return;
     }
     document.getElementById('msg-input').value = msg;
@@ -536,7 +536,7 @@
 
   // Init
   loadPersonas();
-  appendMessage('agent', 'Hi! 👋 I am Chhota Cover. What work do you do?<br><small style="color:#6B7280">e.g. delivery rider · campus worker · domestic worker · freelancer</small>');
+  appendMessage('agent', 'Hi! 👋 I am PocketShield. What work do you do?<br><small style="color:#6B7280">e.g. delivery rider · campus worker · domestic worker · freelancer</small>');
 </script>
 </body>
 </html>
