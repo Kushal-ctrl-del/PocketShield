@@ -397,7 +397,7 @@
     const hiLine = persona && persona.name
       ? `Hi ${persona.name}! 👋 I am PocketShield. ${getQuestionPrompt('occupation')}`
       : `Hi! 👋 I am PocketShield. ${getQuestionPrompt('occupation')}`;
-    appendMessage('agent', hiLine + '<br><small style="color:#6B7280">e.g. delivery rider · campus worker · domestic worker · freelancer</small>');
+    appendMessage('agent', hiLine);
   }
 
   function appendMessage(sender, text) {
