@@ -158,6 +158,41 @@
     color: #374151;
     line-height: 1.4;
   }
+  .tier-label {
+    font-size: 0.72rem;
+    color: #6B7280;
+    margin-top: 10px;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .tier-chips {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  .tier-chip {
+    border: 1px solid #D1D5DB;
+    background: white;
+    color: #4B5563;
+    border-radius: 12px;
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .tier-chip.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+    font-weight: 700;
+  }
+  .ticket-payouts {
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: #374151;
+    line-height: 1.4;
+  }
+  .ticket-payouts strong { display: block; margin-bottom: 2px; }
   .gap-strip {
     background: var(--gap-bg);
     border: 1px solid #FCA5A5;
@@ -434,6 +469,32 @@
     if (t) t.remove();
   }
 
+  function formatINR(value) {
+    const [whole, decimal] = String(value).split('.');
+    const lastThree = whole.slice(-3);
+    const rest = whole.slice(0, -3);
+    const formatted = rest ? rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + ',' + lastThree : lastThree;
+    return decimal ? `${formatted}.${decimal}` : formatted;
+  }
+
+  function formatTier(product, tier) {
+    if (product.id === 'A') {
+      return tier >= 100000 ? `₹${tier / 100000}L` : `₹${tier / 1000}K`;
+    }
+    return `₹${formatINR(tier)}/day`;
+  }
+
+  function updateTicket(ticket, product, quote) {
+    product.tier = Number(ticket.querySelector('.tier-chip.active').dataset.tier);
+    product.week = quote.week;
+    product.day = quote.day;
+    product.year = quote.year;
+    product.payout_lines = quote.payout_lines;
+    ticket.querySelector('.ticket-price').textContent = `₹${formatINR(quote.week)} / week`;
+    ticket.querySelector('.ticket-sub').textContent = `₹${formatINR(quote.day)} a day · ₹${formatINR(quote.year)} a year`;
+    ticket.querySelector('.ticket-payouts-lines').innerHTML = quote.payout_lines.map(line => `<div>${line}</div>`).join('');
+  }
+
   function appendCard(card) {
     const chat = document.getElementById('chat');
     const row = document.createElement('div');
@@ -446,18 +507,20 @@
           ? '<span class="badge recommended">⭐ Recommended</span>'
           : '<span class="badge addon">＋ Add-on</span>';
         html += `
-          <div class="ticket">
+          <div class="ticket" data-product-id="${p.id}">
             ${badge}
-            <div class="ticket-price">₹${p.week} / week</div>
-            <div class="ticket-sub">₹${p.day} a day &nbsp;·&nbsp; ₹${p.year} a year</div>
+            <div class="ticket-price">₹${formatINR(p.week)} / week</div>
+            <div class="ticket-sub">₹${formatINR(p.day)} a day &nbsp;·&nbsp; ₹${formatINR(p.year)} a year</div>
             <div class="ticket-name">${p.name}</div>
-            <div class="ticket-pays">${p.pays}</div>
+            <div class="ticket-payouts"><strong>You get</strong><div class="ticket-payouts-lines">${p.payout_lines.map(line => `<div>${line}</div>`).join('')}</div></div>
+            <div class="tier-label">Choose cover</div>
+            <div class="tier-chips">${p.tiers.map(tier => `<button class="tier-chip${tier === p.tier ? ' active' : ''}" data-tier="${tier}">${formatTier(p, tier)}</button>`).join('')}</div>
           </div>
           <div class="gap-strip"><strong>❌ NOT COVERED:</strong> ${p.not_covered}</div>
         `;
       });
       if (card.products.length > 1) {
-        html += `<div class="total-row">Combined total &nbsp;₹${card.weekly_total} / week</div>`;
+        html += `<div class="total-row">Combined total &nbsp;₹${formatINR(card.weekly_total)} / week</div>`;
       }
       html += `
         <div class="buttons-row">
@@ -474,8 +537,8 @@
 
       const productsHtml = (card.recommendation?.products || []).map((p, i) =>
         `<div class="draft-field">
-          <span class="draft-key">${i === 0 ? '⭐ Primary' : '＋ Add-on'}: ${p.name}</span>
-          <span class="draft-val">₹${p.week}/wk</span>
+          <span class="draft-key">${i === 0 ? '⭐ Primary' : '＋ Add-on'}: ${p.name} (${formatTier(p, p.tier)})</span>
+          <span class="draft-val">₹${formatINR(p.week)}/wk</span>
         </div>`
       ).join('');
 
@@ -487,7 +550,7 @@
           <div class="draft-section">${profileHtml}</div>
           <p style="margin:10px 0 4px;font-size:0.75rem;font-weight:700;color:#6B7280;letter-spacing:0.5px">COVER SELECTED</p>
           <div class="draft-section">${productsHtml}</div>
-          <div class="draft-total">Total ₹${card.recommendation?.weekly_total || 0} / week</div>
+          <div class="draft-total">Total ₹${formatINR(card.recommendation?.weekly_total || 0)} / week</div>
           <div class="buttons-row" style="margin-top:12px">
             <button class="action-btn" onclick="sendAction('Start over')">🔄 Start over</button>
           </div>
@@ -497,6 +560,34 @@
     html += '</div>';
     row.innerHTML = html;
     chat.appendChild(row);
+    if (card.type === 'price') {
+      row.querySelectorAll('.tier-chip').forEach(chip => {
+        chip.addEventListener('click', async () => {
+          const ticket = chip.closest('.ticket');
+          const product = card.products.find(item => item.id === ticket.dataset.productId);
+          const tier = Number(chip.dataset.tier);
+          if (tier === product.tier) return;
+          ticket.querySelectorAll('.tier-chip').forEach(item => item.classList.remove('active'));
+          chip.classList.add('active');
+          try {
+            const res = await fetch('/quote', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({session_id: sessionId, product_id: product.id, tier})
+            });
+            if (!res.ok) throw new Error('Quote request failed');
+            const quote = await res.json();
+            updateTicket(ticket, product, quote);
+            card.weekly_total = card.products.reduce((total, item) => total + item.week, 0);
+            row.querySelector('.total-row').textContent = `Combined total ₹${formatINR(card.weekly_total)} / week`;
+          } catch (error) {
+            chip.classList.remove('active');
+            ticket.querySelector(`.tier-chip[data-tier="${product.tier}"]`).classList.add('active');
+            console.error(error);
+          }
+        });
+      });
+    }
     chat.scrollTop = chat.scrollHeight;
   }
 

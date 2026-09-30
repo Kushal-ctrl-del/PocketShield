@@ -17,6 +17,26 @@ def premium_b(daily, occ, age):
     raw = (daily/100) * 0.9 * OCC_B.get(occ, 1.0) * age_factor(age)
     return math.ceil(round(raw, 6))
 
+def format_inr(value):
+    number = str(int(value))
+    last_three = number[-3:]
+    rest = number[:-3]
+    groups = []
+    while rest:
+        groups.insert(0, rest[-2:])
+        rest = rest[:-2]
+    return ",".join(groups + [last_three])
+
+def payouts(product_id, tier):
+    if product_id == "A":
+        return [
+            f"₹{format_inr(tier)} lump sum for death or permanent disability",
+            f"Up to ₹{format_inr(tier * 20 // 100)} for a 24+ hour accident hospital stay"
+        ]
+    if product_id == "B":
+        return [f"₹{format_inr(tier)}/day for up to 7 days (up to ₹{format_inr(tier * 7)} total)"]
+    raise ValueError(f"Unknown product: {product_id}")
+
 def get_recommendation(occ):
     # primary = Product A if OCC_A[occ] >= 1.5 else Product B
     if OCC_A.get(occ, 1.0) >= 1.5:

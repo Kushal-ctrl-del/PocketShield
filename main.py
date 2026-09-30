@@ -27,6 +27,11 @@ class ChatRequest(BaseModel):
     message: str
     lang: str = "en"
 
+class QuoteRequest(BaseModel):
+    session_id: str
+    product_id: str
+    tier: int
+
 class PersonaResponse(BaseModel):
     name: str
     age: int
@@ -50,6 +55,58 @@ def get_product_data(prod_id):
         if p["id"] == prod_id:
             return p
     return None
+
+def indian_number(value):
+    return f"{value:,}"
+
+def get_tiers(product_id):
+    product = get_product_data(product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Unknown product")
+    return product.get("tiers_inr", product.get("tiers_inr_per_day", []))
+
+def default_tier(product_id, occupation):
+    if product_id == "A":
+        return 100000 if occupation in ["delivery_rider", "construction_worker"] else 50000
+    return 500 if occupation in ["delivery_rider", "construction_worker"] else 300
+
+def build_product(product_id, profile, selected_tier=None):
+    occupation = profile["occupation"]
+    age = profile["age"]
+    hours = profile["hours_per_week"]
+    night_work = profile["night_work"]
+    tier = selected_tier if selected_tier is not None else default_tier(product_id, occupation)
+    if tier not in get_tiers(product_id):
+        raise HTTPException(status_code=400, detail="Invalid tier")
+
+    if product_id == "A":
+        weekly = calculator.premium_a(tier, occupation, hours, night_work)
+    else:
+        weekly = calculator.premium_b(tier, occupation, age)
+    product = get_product_data(product_id)
+    return {
+        "id": product_id,
+        "name": product["name"],
+        "tier": tier,
+        "tiers": get_tiers(product_id),
+        "week": weekly,
+        "day": round(weekly / 7, 2),
+        "year": weekly * 52,
+        "payout_lines": calculator.payouts(product_id, tier),
+        "pays": product["pays"],
+        "not_covered": product["not_covered"]
+    }
+
+def build_recommendation(profile, selected_tiers=None):
+    primary_id, secondary_id = calculator.get_recommendation(profile["occupation"])
+    selected_tiers = selected_tiers or {}
+    primary = build_product(primary_id, profile, selected_tiers.get(primary_id))
+    secondary = build_product(secondary_id, profile, selected_tiers.get(secondary_id))
+    return {
+        "type": "price",
+        "products": [primary, secondary],
+        "weekly_total": primary["week"] + secondary["week"]
+    }
 
 
 def get_question_text(lang: str, key: str) -> str:
@@ -242,44 +299,19 @@ async def chat(req: ChatRequest):
     
     prim_id, sec_id = calculator.get_recommendation(occ)
     
-    def build_prod(pid):
-        prod = get_product_data(pid)
-        if pid == "A":
-            if occ in ["delivery_rider", "construction_worker"]:
-                si = 100000
-            else:
-                si = 50000
-            weekly = calculator.premium_a(si, occ, hrs, ngt)
-        else:
-            if occ in ["delivery_rider", "construction_worker"]:
-                daily = 500
-            else:
-                daily = 300
-            weekly = calculator.premium_b(daily, occ, age)
-            
-        return {
-            "id": pid,
-            "name": prod["name"],
-            "week": weekly,
-            "day": round(weekly/7, 2),
-            "year": weekly * 52,
-            "pays": prod["pays"],
-            "not_covered": prod["not_covered"]
-        }
-
-    p1 = build_prod(prim_id)
-    p2 = build_prod(sec_id)
-    
-    card_data = {
-        "type": "price",
-        "products": [p1, p2],
-        "weekly_total": p1["week"] + p2["week"]
-    }
+    selected_tiers = session.setdefault("selected_tiers", {
+        "A": default_tier("A", occ),
+        "B": default_tier("B", occ)
+    })
+    card_data = build_recommendation(p, selected_tiers)
     
     session["recommendation"] = card_data
     
     # phrasing call
-    products_text = f"Primary: {p1['name']} at Rs {p1['week']}/week. Add-on: {p2['name']} at Rs {p2['week']}/week."
+    products_text = " ".join(
+        f"{product['name']} at Rs {product['week']}/week."
+        for product in card_data["products"]
+    )
     try:
         reply, tu, lc = phrase_intro(lang, products_text)
         meter["tokens_total"] += tu
@@ -295,6 +327,26 @@ async def chat(req: ChatRequest):
         reply = guard.REFUSAL_MESSAGE
         
     return {"reply": reply, "card": card_data, "meter": meter}
+
+@app.post("/quote")
+async def quote(req: QuoteRequest):
+    session = sessions.get(req.session_id)
+    if not session or session.get("stage") not in ["done", "draft"]:
+        raise HTTPException(status_code=400, detail="Complete the questionnaire first")
+    if req.product_id not in ["A", "B"]:
+        raise HTTPException(status_code=400, detail="Unknown product")
+    if req.tier not in get_tiers(req.product_id):
+        raise HTTPException(status_code=400, detail="Invalid tier")
+
+    session.setdefault("selected_tiers", {})[req.product_id] = req.tier
+    product = build_product(req.product_id, session["profile"], req.tier)
+    session["recommendation"] = build_recommendation(session["profile"], session["selected_tiers"])
+    return {
+        "week": product["week"],
+        "day": product["day"],
+        "year": product["year"],
+        "payout_lines": product["payout_lines"]
+    }
 
 @app.get("/personas")
 async def get_personas():
