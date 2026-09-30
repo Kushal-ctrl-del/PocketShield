@@ -5,6 +5,7 @@ from main import detect_message_language
 def test_language_detection():
     assert detect_message_language("main delivery rider hun, 45 ghante kaam karta hoon", "en") == "hinglish"
     assert detect_message_language("I work as a delivery rider and I am 24", "hinglish") == "en"
+    assert detect_message_language("naan delivery rider-a velai seyyaren", "en") == "tanglish"
 
 def test_calc():
     # A 100000, rider, 45h, no night -> 19

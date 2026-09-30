@@ -53,6 +53,16 @@ def get_product_data(prod_id):
 
 
 def get_question_text(lang: str, key: str) -> str:
+    if lang == "tanglish":
+        questions = {
+            "occupation": "Enna velai seyyareenga? (delivery rider, campus worker, domestic worker, construction, freelancer)",
+            "hours": "Oru vaarathula roughly ethana mani neram velai seyyareenga?",
+            "night": "Neenga adikkadi night shift-la velai seyyareengala (10pm-ku appuram)?",
+            "age": "Ungaloda vayasu enna?",
+            "age_limit": "Sorry, indha demo cover 18-55 vayasu ullavangalukku mattum dhaan."
+        }
+        return questions.get(key, "")
+
     if lang == "hinglish":
         questions = {
             "occupation": "Kaam kya hai? (delivery rider, campus worker, domestic worker, construction, freelancer)",
@@ -76,9 +86,17 @@ def get_question_text(lang: str, key: str) -> str:
 def detect_message_language(message: str, selected_lang: str = "en") -> str:
     text = (message or "").strip()
     if not text:
-        return selected_lang if selected_lang in ["en", "hinglish"] else "en"
+        return selected_lang if selected_lang in ["en", "hinglish", "tanglish"] else "en"
 
     lowered = text.lower()
+    tanglish_markers = [
+        "enna", "velai", "seyy", "seyyareenga", "vaarathula", "ethana", "mani",
+        "ungaloda", "vayasu", "indha", "ullavanga", "aama", "illa", "romba",
+        "kudumbam", "irukken", "panren", "pannuren", "la", "ku", "oda"
+    ]
+    if any(marker in lowered.split() for marker in tanglish_markers):
+        return "tanglish"
+
     hinglish_markers = [
         "main", "mein", "kaam", "ghante", "haan", "nahi", "hai", "yaar", "sirf",
         "kya", "kar raha", "kar rha", "hun", "houn", "bhi", "se", "yr", "gaadi"

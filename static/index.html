@@ -323,6 +323,7 @@
       <div class="lang-toggle">
         <button class="lang-btn active" id="btn-en" onclick="setLang('en', this)">EN</button>
         <button class="lang-btn" id="btn-hinglish" onclick="setLang('hinglish', this)">Hinglish</button>
+        <button class="lang-btn" id="btn-tanglish" onclick="setLang('tanglish', this)">Tanglish</button>
       </div>
     </div>
     <div class="personas" id="personas-container"></div>
@@ -370,6 +371,16 @@
   }
 
   function getQuestionPrompt(key) {
+    if (lang === 'tanglish') {
+      const map = {
+        occupation: 'Enna velai seyyareenga? (delivery rider, campus worker, domestic worker, construction, freelancer)',
+        hours: 'Oru vaarathula roughly ethana mani neram velai seyyareenga?',
+        night: 'Neenga adikkadi night shift-la velai seyyareengala (10pm-ku appuram)?',
+        age: 'Ungaloda vayasu enna?'
+      };
+      return map[key] || 'Enna solla virumbareenga?';
+    }
+
     if (lang === 'hinglish') {
       const map = {
         occupation: 'Kaam kya hai? (delivery rider, campus worker, domestic worker, construction, freelancer)',

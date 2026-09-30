@@ -49,7 +49,7 @@ def extract_profile(message: str) -> tuple[dict, int, int]:
     client = get_client()
 
     system_prompt = (
-        "You extract a livelihood profile from the user's message (which may be in English, Hindi, or Hinglish). "
+        "You extract a livelihood profile from the user's message (which may be in English, Hindi, Hinglish, or Tanglish). "
         "Call save_profile with only fields the user clearly stated. Never guess. "
         "Occupations allowed: delivery_rider, campus_worker, domestic_worker, construction_worker, freelancer. "
         "Map synonyms appropriately: maid/cleaner/cook -> domestic_worker, "
@@ -92,7 +92,9 @@ def extract_profile(message: str) -> tuple[dict, int, int]:
 def phrase_intro(lang: str, products_text: str) -> tuple[str, int, int]:
     client = get_client()
 
-    if lang == "hinglish":
+    if lang == "tanglish":
+        lang_instruction = "Tanglish (Tamil written in English letters, casual WhatsApp style, like 'Indha cover ungalukku useful-a irukkum!')"
+    elif lang == "hinglish":
         lang_instruction = "Hinglish (mix of Hindi and English, casual WhatsApp style, like 'Yaar, ye cover lelo!')"
     else:
         lang_instruction = "simple English"
